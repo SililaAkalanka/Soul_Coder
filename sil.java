@@ -12,21 +12,11 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Data access operations for Customer records.
- * Implements Section 7.1 of the FixFlow Project Specification.
- */
 public class CustomerDB {
 
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
-    /**
-     * Inserts a new customer record into the database.
-     *
-     * @param customer customer model containing details
-     * @return generated customer_id
-     * @throws SQLException if a database error occurs
-     */
+
     public static int createCustomer(Customer customer) throws SQLException {
         String sql = "INSERT INTO customers (full_name, phone, email, address, created_at) VALUES (?, ?, ?, ?, ?)";
         String now = LocalDateTime.now().format(DATE_FORMATTER);
@@ -52,13 +42,7 @@ public class CustomerDB {
         throw new SQLException("Failed to retrieve generated customer ID.");
     }
 
-    /**
-     * Updates an existing customer's contact details.
-     *
-     * @param customer customer with updated fields
-     * @return true if updated, false if not found
-     * @throws SQLException if a database error occurs
-     */
+
     public static boolean updateCustomer(Customer customer) throws SQLException {
         String sql = "UPDATE customers SET full_name = ?, phone = ?, email = ?, address = ? WHERE customer_id = ?";
 
@@ -74,16 +58,8 @@ public class CustomerDB {
         }
     }
 
-    /**
-     * Deletes a customer record.
-     * Protects dependent financial and repair history records in accordance with Section 7.10.
-     *
-     * @param customerId ID of the customer to delete
-     * @return true if deleted
-     * @throws SQLException if deletion is blocked due to active repairs or foreign keys
-     */
+
     public static boolean deleteCustomer(int customerId) throws SQLException {
-        // Enforce business rule: Protect historical repair records
         if (hasRepairHistory(customerId)) {
             throw new SQLException("Cannot delete Customer #" + customerId + ": Associated repair job history exists. " +
                     "Financial and repair records must be preserved.");
@@ -116,13 +92,7 @@ public class CustomerDB {
         }
     }
 
-    /**
-     * Checks if a customer has any associated repair job records.
-     *
-     * @param customerId customer ID
-     * @return true if repair records exist, false otherwise
-     * @throws SQLException if a database query fails
-     */
+
     public static boolean hasRepairHistory(int customerId) throws SQLException {
         String sql = "SELECT COUNT(*) FROM repair_jobs WHERE customer_id = ?";
         try (Connection conn = DatabaseConnection.getConnection();
@@ -137,13 +107,7 @@ public class CustomerDB {
         return false;
     }
 
-    /**
-     * Retrieves a customer by their ID.
-     *
-     * @param customerId customer ID
-     * @return {@link Customer} object, or null if not found
-     * @throws SQLException if a database error occurs
-     */
+
     public static Customer getCustomerById(int customerId) throws SQLException {
         String sql = "SELECT customer_id, full_name, phone, email, address, created_at FROM customers WHERE customer_id = ?";
         try (Connection conn = DatabaseConnection.getConnection();
